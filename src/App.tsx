@@ -43,11 +43,11 @@ export default function App() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--t-page)] font-sans text-[var(--t-ink)]">
-      {/* Sidebar */}
-      <aside className="flex w-60 shrink-0 flex-col border-r border-[var(--t-border)] bg-[var(--t-band)]">
-        <div className="flex items-center gap-2.5 px-4 pb-4 pt-5">
-          <img src="/icons/icon-192.png" alt="ShrinkIt" className="h-9 w-9" />
-          <div>
+      {/* Sidebar: icon rail on narrow windows, full labels on wide windows */}
+      <aside className="flex w-16 shrink-0 flex-col border-r border-[var(--t-border)] bg-[var(--t-band)] lg:w-60">
+        <div className="flex items-center gap-2.5 px-3 pb-4 pt-5 lg:px-4">
+          <img src="/icons/icon-192.png" alt="ShrinkIt" className="h-9 w-9 shrink-0" />
+          <div className="hidden lg:block">
             <p className="text-base font-bold leading-tight text-[var(--t-ink)]">
               ShrinkIt
             </p>
@@ -57,7 +57,7 @@ export default function App() {
           </div>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3">
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-2 lg:px-3">
           {nav.map(({ id, label, Icon }) => {
             const active = tool === id;
             return (
@@ -65,20 +65,21 @@ export default function App() {
                 key={id}
                 type="button"
                 onClick={() => setTool(id)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors ${
+                title={label}
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors lg:justify-start justify-center ${
                   active
                     ? "bg-[var(--color-brand)] text-white"
                     : "text-[var(--t-ink-2)] hover:bg-[var(--t-surface-2)]"
                 }`}
               >
-                <Icon size={20} weight={active ? "fill" : "regular"} />
-                <span className="leading-snug">{label}</span>
+                <Icon size={20} weight={active ? "fill" : "regular"} className="shrink-0" />
+                <span className="hidden leading-snug lg:inline">{label}</span>
               </button>
             );
           })}
         </nav>
 
-        <div className="flex items-center gap-2 border-t border-[var(--t-border)] px-4 py-3">
+        <div className="flex flex-col items-center gap-2 border-t border-[var(--t-border)] px-2 py-3 lg:flex-row lg:px-4">
           <LanguageMenu locale={locale} onChange={changeLocale} />
           <ThemeToggle />
         </div>

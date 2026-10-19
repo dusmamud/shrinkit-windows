@@ -4,7 +4,7 @@ import { stripBlobMetadata } from "../../lib/image/strip";
  * Standalone Client-Side Target File Size (KB) Compressor.
  *
  * Completely isolated from main app source code.
- * Runs 100% in-browser using HTML5 Canvas / OffscreenCanvas with binary search
+ * Runs 100% on-device using HTML5 Canvas / OffscreenCanvas with binary search
  * to hit an exact KB ceiling (e.g. < 50 KB, < 20 KB) while preserving maximum visual clarity.
  */
 

@@ -3,7 +3,7 @@ import { stripBlobMetadata } from "../../lib/image/strip";
 /**
  * Standalone Passport & Visa Photo Maker Engine.
  *
- * 100% In-Browser & Private.
+ * 100% On-Device & Private.
  * Formats portrait photos to official national passport & visa dimensions with 300 DPI.
  */
 

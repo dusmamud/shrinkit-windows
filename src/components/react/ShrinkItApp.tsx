@@ -535,25 +535,16 @@ export default function ShrinkItApp({ locale }: ShrinkItAppProps) {
           role="alert"
           className="mx-auto mb-6 rounded-[6px] border border-tbannerline bg-tbannerbg p-4 text-center text-sm font-medium text-tbannertext"
         >
+          {/* Desktop adaptation: this app runs on WebView2, not a browser. */}
           {t(locale, "errors.browser_unsupported")}{" "}
           <a
-            href="https://www.google.com/chrome"
+            href="https://developer.microsoft.com/microsoft-edge/webview2/"
             className="font-bold underline transition hover:text-tink"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Google Chrome
-          </a>{" "}
-          {t(locale, "errors.browser_unsupported_or")}{" "}
-          <a
-            href="http://mozilla.org/firefox/new"
-            className="font-bold underline transition hover:text-tink"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Firefox
+            WebView2
           </a>
-          .
         </div>
       )}
 

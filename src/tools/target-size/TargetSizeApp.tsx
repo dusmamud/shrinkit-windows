@@ -124,7 +124,8 @@ export default function TargetSizeApp({
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-1.5 rounded-full border border-taccent/20 bg-taccent/10 px-3 py-1 text-xs font-medium text-taccent mb-3">
           <Sparkle size={14} weight="fill" />
-          <span>100% In-Browser & Private — No Server Uploads</span>
+          {/* Desktop adaptation: "on-device", not "in-browser". */}
+          <span>100% On-Device & Private — No Server Uploads</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-tink mb-3">{title}</h1>
         <p className="max-w-2xl mx-auto text-sm sm:text-base text-tmuted">{subtitle}</p>
@@ -322,7 +323,7 @@ export default function TargetSizeApp({
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-tink mb-1">100% Private In-Browser</h3>
+            <h3 className="font-semibold text-tink mb-1">100% Private On-Device</h3>
             <p>
               Your personal ID photos, signatures, and certificates never touch any external server.
               Processing happens entirely in your browser sandbox.

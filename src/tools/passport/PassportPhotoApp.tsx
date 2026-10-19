@@ -70,10 +70,11 @@ export default function PassportPhotoApp() {
           <span>Official 300 DPI Passport & Visa Standards</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-tink mb-3">
-          Online Passport & Visa Photo Maker
+          {/* Desktop adaptation: no "Online" — this is a desktop app. */}
+          Passport & Visa Photo Maker
         </h1>
         <p className="max-w-2xl mx-auto text-sm sm:text-base text-tmuted">
-          Create compliant passport and visa photos online in seconds. Automatically formatted to
+          Create compliant passport and visa photos in seconds. Automatically formatted to
           exact dimensions with white background and 300 DPI resolution.
         </p>
       </div>
