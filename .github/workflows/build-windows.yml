@@ -38,7 +38,7 @@ jobs:
           workspaces: src-tauri
 
       - name: Build Tauri app (NSIS + MSI)
-        uses: tauri-apps/tauri-action@v2
+        uses: tauri-apps/tauri-action@v1
         with:
           args: --bundles nsis,msi
 
