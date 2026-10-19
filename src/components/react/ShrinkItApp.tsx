@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import JSZip from "jszip";
 import { t } from "../../lib/i18n";
-import { downloadFile, useTauriFileDrop } from "../../lib/desktop";
+import { downloadFile, scrollIntoViewIfNeeded, useTauriFileDrop } from "../../lib/desktop";
 import {
   ImageProcessor,
   ProcessError,
@@ -485,19 +485,11 @@ export default function ShrinkItApp({ locale }: ShrinkItAppProps) {
       setRunning(false);
       abortRef.current = null;
       // Auto smooth scroll to the results section (matching ReduceImages behavior)
+      // Desktop adaptation: the app scrolls inside a main div, not the
+      // window, so scroll the nearest scrollable ancestor instead.
       window.requestAnimationFrame(() => {
         setTimeout(() => {
-          if (resultRef.current) {
-            const prefersReduced =
-              typeof window !== "undefined" &&
-              window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-            const rect = resultRef.current.getBoundingClientRect();
-            // Only scroll when the results are not already fully visible —
-            // otherwise the page yanks even though nothing needs revealing.
-            if (rect.top >= 0 && rect.bottom <= window.innerHeight) return;
-            const top = rect.top + window.scrollY - 30;
-            window.scrollTo({ top, behavior: prefersReduced ? "auto" : "smooth" });
-          }
+          if (resultRef.current) scrollIntoViewIfNeeded(resultRef.current);
         }, 120);
       });
     }

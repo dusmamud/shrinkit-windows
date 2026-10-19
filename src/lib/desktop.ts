@@ -100,3 +100,52 @@ export function useTauriFileDrop(onFiles: (files: File[]) => void): void {
     };
   }, []);
 }
+
+/**
+ * Scroll an element into view inside the desktop app's scroll container.
+ *
+ * Desktop adaptation: the web app scrolls `window`, but this app's content
+ * scrolls inside a `main` div (`overflow-y-auto` in App.tsx) while the
+ * window itself never scrolls — so `window.scrollTo` silently does nothing.
+ * This walks up to the nearest scrollable ancestor and scrolls that instead,
+ * only when the element is not already fully visible (matching the web app's
+ * "don't yank the page" behavior).
+ */
+export function scrollIntoViewIfNeeded(el: HTMLElement, offset = 30): void {
+  let container: HTMLElement | null = el.parentElement;
+  while (container) {
+    const style = window.getComputedStyle(container);
+    const scrollable =
+      (style.overflowY === "auto" || style.overflowY === "scroll") &&
+      container.scrollHeight > container.clientHeight + 1;
+    if (scrollable) break;
+    container = container.parentElement;
+  }
+  const scroller: HTMLElement | Window = container ?? window;
+
+  const elRect = el.getBoundingClientRect();
+  let fullyVisible: boolean;
+  let top: number;
+  if (scroller === window) {
+    fullyVisible =
+      elRect.top >= 0 && elRect.bottom <= window.innerHeight;
+    top = elRect.top + window.scrollY - offset;
+  } else {
+    const cRect = (scroller as HTMLElement).getBoundingClientRect();
+    fullyVisible =
+      elRect.top >= cRect.top && elRect.bottom <= cRect.bottom;
+    top =
+      (scroller as HTMLElement).scrollTop + (elRect.top - cRect.top) - offset;
+  }
+  if (fullyVisible) return;
+
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const behavior = prefersReduced ? "auto" : "smooth";
+  if (scroller === window) {
+    window.scrollTo({ top, behavior });
+  } else {
+    (scroller as HTMLElement).scrollTo({ top, behavior });
+  }
+}

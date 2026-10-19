@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { downloadFile, useTauriFileDrop } from "../../lib/desktop";
+import { downloadFile, scrollIntoViewIfNeeded, useTauriFileDrop } from "../../lib/desktop";
 import { compressToTargetKb, type CompressionResult } from "./targetCompressor";
 import {
   UploadSimple,
@@ -33,6 +33,7 @@ export default function TargetSizeApp({
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   const TARGET_PRESETS = [20, 50, 100, 200, 500];
 
@@ -50,6 +51,13 @@ export default function TargetSizeApp({
       try {
         const res = await compressToTargetKb(file, { targetKb, blackWhite });
         setResult(res);
+        // Desktop adaptation: the web app's main resizer auto-scrolls to the
+        // result — do the same here via the app's scroll container.
+        window.requestAnimationFrame(() => {
+          setTimeout(() => {
+            if (resultRef.current) scrollIntoViewIfNeeded(resultRef.current);
+          }, 120);
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Compression failed");
       } finally {
@@ -203,7 +211,10 @@ export default function TargetSizeApp({
         </div>
       ) : (
         /* Result & Comparison Card */
-        <div className="rounded-2xl border border-tline bg-tsurface p-6 sm:p-8 shadow-sm">
+        <div
+          ref={resultRef}
+          className="rounded-2xl border border-tline bg-tsurface p-6 sm:p-8 shadow-sm"
+        >
           <div className="flex flex-col md:flex-row items-center gap-8">
             {/* Image Preview */}
             <div className="relative w-full max-w-[280px] shrink-0 overflow-hidden rounded-xl border border-tline bg-tsurface2 shadow-inner aspect-square flex items-center justify-center">
@@ -283,12 +294,21 @@ export default function TargetSizeApp({
                 {result?.dataUrl && (
                   <button
                     type="button"
-                    onClick={() =>
-                      void downloadFile(
+                    onClick={() => {
+                      // Surface download failures visibly instead of failing
+                      // silently — a native dialog that can't open is a bug
+                      // we want to see, not swallow.
+                      downloadFile(
                         result.dataUrl,
                         `shrinkit-${targetKb}kb-${selectedFile.name.replace(/\.[^.]+$/, "")}.jpg`,
-                      )
-                    }
+                      ).catch((err) =>
+                        setError(
+                          err instanceof Error
+                            ? `Download failed: ${err.message}`
+                            : "Download failed",
+                        ),
+                      );
+                    }}
                     className="inline-flex items-center justify-center gap-2 rounded-lg bg-tbtna px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#0257bf] cursor-pointer"
                   >
                     <DownloadSimple size={18} weight="bold" />
