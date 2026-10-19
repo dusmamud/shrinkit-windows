@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import JSZip from "jszip";
 import { t } from "../../lib/i18n";
-import { useTauriFileDrop } from "../../lib/desktop";
+import { downloadFile, useTauriFileDrop } from "../../lib/desktop";
 import {
   ImageProcessor,
   ProcessError,
@@ -27,14 +27,17 @@ function nextId(): string {
   return `img-${Date.now().toString(36)}-${idCounter}`;
 }
 
-function triggerDownload(url: string, fileName: string): void {
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+/**
+ * Download a processed image. In the desktop app this opens a native
+ * "Save as" dialog (the WebView ignores the anchor `download` attribute);
+ * in a browser it falls back to the classic anchor download.
+ */
+async function triggerDownload(url: string, fileName: string): Promise<void> {
+  try {
+    await downloadFile(url, fileName);
+  } finally {
+    if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+  }
 }
 
 /** Render a small JPEG thumbnail from a decoded bitmap. */
@@ -505,7 +508,7 @@ export default function ShrinkItApp({ locale }: ShrinkItAppProps) {
     const blob = new Blob([item.result.data.buffer as ArrayBuffer], {
       type: FORMAT_MIME[item.result.format],
     });
-    triggerDownload(URL.createObjectURL(blob), item.result.fileName);
+    void triggerDownload(URL.createObjectURL(blob), item.result.fileName);
   }, []);
 
   const downloadZip = useCallback(async () => {
@@ -518,7 +521,7 @@ export default function ShrinkItApp({ locale }: ShrinkItAppProps) {
         zip.file(item.result!.fileName, item.result!.data);
       }
       const blob = await zip.generateAsync({ type: "blob" });
-      triggerDownload(URL.createObjectURL(blob), "shrinkit-images.zip");
+      await triggerDownload(URL.createObjectURL(blob), "shrinkit-images.zip");
     } finally {
       setZipping(false);
     }

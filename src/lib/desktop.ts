@@ -27,6 +27,38 @@ function fileFromPath(path: string, bytes: Uint8Array): File {
 }
 
 /**
+ * Download a file. In the Tauri app the WebView ignores the anchor
+ * `download` attribute (no "Save as" dialog ever appears), so downloads go
+ * through a native Save dialog + the fs plugin instead. In a plain browser
+ * the classic anchor download is used, which honours the browser's own
+ * "ask where to save" setting.
+ *
+ * @param url blob: or data: URL of the file content
+ * @param fileName suggested file name, e.g. "shrinkit-photo.jpg"
+ */
+export async function downloadFile(url: string, fileName: string): Promise<void> {
+  if (!isTauri()) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return;
+  }
+  const { save } = await import("@tauri-apps/plugin-dialog");
+  const { writeFile } = await import("@tauri-apps/plugin-fs");
+  const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
+  const path = await save({
+    defaultPath: fileName,
+    filters: ext ? [{ name: "Files", extensions: [ext] }] : undefined,
+  });
+  if (!path) return; // user cancelled the dialog
+  const blob = await (await fetch(url)).blob();
+  await writeFile(path, new Uint8Array(await blob.arrayBuffer()));
+}
+
+/**
  * Desktop adaptation: forward OS-level file drops (e.g. Explorer -> app
  * window) into a tool's existing file-adding function.
  *

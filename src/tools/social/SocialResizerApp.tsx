@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { useTauriFileDrop } from "../../lib/desktop";
+import { downloadFile, useTauriFileDrop } from "../../lib/desktop";
 import {
   SOCIAL_PRESETS,
   resizeForSocial,
@@ -227,14 +227,19 @@ export default function SocialResizerApp() {
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 {result?.dataUrl && (
-                  <a
-                    href={result.dataUrl}
-                    download={`social-${selectedPreset.id}-${selectedFile.name.replace(/\.[^.]+$/, "")}.jpg`}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void downloadFile(
+                        result.dataUrl,
+                        `social-${selectedPreset.id}-${selectedFile.name.replace(/\.[^.]+$/, "")}.jpg`,
+                      )
+                    }
                     className="inline-flex items-center justify-center gap-2 rounded-lg bg-tbtna px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#0257bf] cursor-pointer"
                   >
                     <DownloadSimple size={18} weight="bold" />
                     <span>Download Resized Photo</span>
-                  </a>
+                  </button>
                 )}
                 <button
                   type="button"

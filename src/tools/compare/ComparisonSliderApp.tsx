@@ -1,5 +1,5 @@
 import { decodeBitmapWithHeicFallback } from "../../lib/image/heic";
-import { useTauriFileDrop } from "../../lib/desktop";
+import { downloadFile, useTauriFileDrop } from "../../lib/desktop";
 import { stripBlobMetadata } from "../../lib/image/strip";
 import { useState, useRef, useCallback } from "react";
 import { UploadSimple, SlidersHorizontal, Trash, FileArrowDown } from "@phosphor-icons/react";
@@ -257,13 +257,18 @@ export default function ComparisonSliderApp() {
             />
 
             {compressedUrl && (
-              <a
-                href={compressedUrl}
-                download={`compressed-${quality}q-${selectedFile.name.replace(/\.[^.]+$/, "")}.jpg`}
+              <button
+                type="button"
+                onClick={() =>
+                  void downloadFile(
+                    compressedUrl,
+                    `compressed-${quality}q-${selectedFile.name.replace(/\.[^.]+$/, "")}.jpg`,
+                  )
+                }
                 className="inline-flex items-center gap-2 rounded-lg bg-tbtna px-6 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#0257bf] cursor-pointer"
               >
                 <span>Download Compressed Result</span>
-              </a>
+              </button>
             )}
           </div>
         </div>
