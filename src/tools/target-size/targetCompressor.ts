@@ -13,6 +13,12 @@ export interface CompressionOptions {
   format?: "image/jpeg" | "image/webp";
   maxDimension?: number;
   /**
+   * Background fill for transparent inputs (PNG/WebP with alpha). JPEG has
+   * no alpha, so transparency is composited over this color (default white).
+   * For WebP output the alpha channel is preserved unless a color is set.
+   */
+  backgroundColor?: string;
+  /**
    * Black & White mode for signatures / scans: converts the image to
    * grayscale and binarizes it with Otsu's threshold, producing
    * razor-sharp black-on-white output that compresses far smaller.
@@ -79,6 +85,39 @@ export interface CompressionResult {
   iterations: number;
 }
 
+/**
+ * True when a PNG/WebP input actually contains transparent pixels
+ * (sampled on a downscaled copy). JPEG/BMP inputs never have alpha.
+ * Used to decide whether a background-color choice is relevant.
+ */
+export async function detectTransparency(file: File | Blob): Promise<boolean> {
+  if (file.type !== "image/png" && file.type !== "image/webp") return false;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const maxSide = 64;
+    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+    const w = Math.max(1, Math.round(bitmap.width * scale));
+    const h = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      bitmap.close();
+      return false;
+    }
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close();
+    const data = ctx.getImageData(0, 0, w, h).data;
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] < 255) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 export async function compressToTargetKb(
   file: File | Blob,
   options: CompressionOptions,
@@ -140,9 +179,13 @@ export async function compressToTargetKb(
     throw new Error("Canvas 2D context is not supported in this browser.");
   }
 
-  // JPEG doesn't support transparency — composite on solid white
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, targetW, targetH);
+  // JPEG has no alpha channel, so transparency must be composited over a
+  // solid background (user-chosen color, white by default). WebP output
+  // preserves the alpha channel unless a background was explicitly chosen.
+  if (format === "image/jpeg" || options.backgroundColor) {
+    ctx.fillStyle = options.backgroundColor ?? "#ffffff";
+    ctx.fillRect(0, 0, targetW, targetH);
+  }
   ctx.drawImage(bitmap, 0, 0, targetW, targetH);
   if (bitmap && typeof bitmap.close === "function") {
     bitmap.close();
