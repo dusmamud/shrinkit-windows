@@ -38,7 +38,7 @@ done
 [ ! -f src-tauri/main.rs ] && ok "no stray src-tauri/main.rs" || bad "stray src-tauri/main.rs will confuse Cargo"
 
 echo "== 4. Plugin consistency (Cargo.toml <-> main.rs <-> capabilities) =="
-for plug in dialog clipboard-manager fs; do
+for plug in dialog clipboard-manager fs opener; do
   cargo_hit=$(grep -c "tauri-plugin-$plug" src-tauri/Cargo.toml || true)
   main_hit=$(grep -c "tauri_plugin_${plug//-/_}::init()" src-tauri/src/main.rs || true)
   if [ "$cargo_hit" -gt 0 ] && [ "$main_hit" -gt 0 ]; then

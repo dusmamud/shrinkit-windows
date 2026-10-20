@@ -3,6 +3,7 @@ import {
   ArrowsLeftRight,
   Crop,
   DownloadSimple,
+  GearSix,
   IdentificationCard,
   ShareNetwork,
 } from "@phosphor-icons/react";
@@ -15,6 +16,7 @@ import { detectLocale, saveLocale, t } from "./lib/i18n";
 import type { Locale } from "./lib/locales";
 import LanguageMenu from "./components/shell/LanguageMenu";
 import ThemeToggle from "./components/shell/ThemeToggle";
+import SettingsPage from "./components/shell/SettingsPage";
 
 type ToolId = "resize" | "size50" | "size20" | "passport" | "social" | "compare";
 
@@ -25,6 +27,7 @@ type ToolId = "resize" | "size50" | "size20" | "passport" | "social" | "compare"
  */
 export default function App() {
   const [tool, setTool] = useState<ToolId>("resize");
+  const [showSettings, setShowSettings] = useState(false);
   const [locale, setLocale] = useState<Locale>(() => detectLocale());
 
   const changeLocale = (next: Locale) => {
@@ -64,10 +67,13 @@ export default function App() {
               <button
                 key={id}
                 type="button"
-                onClick={() => setTool(id)}
+                onClick={() => {
+                  setTool(id);
+                  setShowSettings(false);
+                }}
                 title={label}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors lg:justify-start justify-center ${
-                  active
+                  active && !showSettings
                     ? "bg-[var(--color-brand)] text-white"
                     : "text-[var(--t-ink-2)] hover:bg-[var(--t-surface-2)]"
                 }`}
@@ -79,6 +85,23 @@ export default function App() {
           })}
         </nav>
 
+        <div className="px-2 pb-1 lg:px-3">
+          <button
+            type="button"
+            onClick={() => setShowSettings(true)}
+            aria-current={showSettings ? "page" : undefined}
+            title="Settings"
+            className={`flex w-full items-center justify-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors lg:justify-start ${
+              showSettings
+                ? "bg-[var(--color-brand)] text-white"
+                : "text-[var(--t-ink-2)] hover:bg-[var(--t-surface-2)]"
+            }`}
+          >
+            <GearSix size={20} weight={showSettings ? "fill" : "regular"} className="shrink-0" />
+            <span className="hidden leading-snug lg:inline">Settings</span>
+          </button>
+        </div>
+
         <div className="flex flex-col items-center gap-2 border-t border-[var(--t-border)] px-2 py-3 lg:flex-row lg:px-4">
           <LanguageMenu locale={locale} onChange={changeLocale} />
           <ThemeToggle />
@@ -88,6 +111,10 @@ export default function App() {
       {/* Tool area */}
       <main className="min-w-0 flex-1 overflow-y-auto">
         <div className="mx-auto w-full max-w-6xl px-6 py-6">
+          {showSettings ? (
+            <SettingsPage locale={locale} onLocaleChange={changeLocale} />
+          ) : (
+            <>
           {tool === "resize" && <ShrinkItApp locale={locale} />}
           {tool === "size50" && (
             <TargetSizeApp
@@ -105,6 +132,8 @@ export default function App() {
           {tool === "passport" && <PassportPhotoApp />}
           {tool === "social" && <SocialResizerApp />}
           {tool === "compare" && <ComparisonSliderApp />}
+            </>
+          )}
         </div>
       </main>
     </div>

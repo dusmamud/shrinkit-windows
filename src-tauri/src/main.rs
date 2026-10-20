@@ -9,6 +9,9 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         // clipboard-manager plugin: reliable image copy in the WebView.
         .plugin(tauri_plugin_clipboard_manager::init())
+        // opener plugin: external links (privacy / terms / website) open
+        // in the user's default browser, like the Android app.
+        .plugin(tauri_plugin_opener::init())
         .run(tauri::generate_context!())
         .expect("error while running ShrinkIt");
 }
