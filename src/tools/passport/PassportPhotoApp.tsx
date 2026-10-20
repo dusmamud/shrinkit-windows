@@ -1,5 +1,10 @@
 import { useState, useRef, useCallback } from "react";
-import { downloadFile, useTauriFileDrop } from "../../lib/desktop";
+import {
+  downloadFile,
+  useImagePaste,
+  useTauriFileDrop,
+} from "../../lib/desktop";
+import ToolHeader from "../../components/shell/ToolHeader";
 import {
   PASSPORT_SPECS,
   generatePassportPhoto,
@@ -47,6 +52,11 @@ export default function PassportPhotoApp() {
     if (files[0]) handleFileChange(files[0]);
   });
 
+  // Desktop: Ctrl+V pastes an image here too, like the main resizer.
+  useImagePaste((files) => {
+    if (files[0]) handleFileChange(files[0]);
+  });
+
   const handleSpecSelect = (spec: PassportSpec) => {
     setSelectedSpec(spec);
     if (selectedFile) {
@@ -62,29 +72,20 @@ export default function PassportPhotoApp() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-taccent/20 bg-taccent/10 px-3 py-1 text-xs font-medium text-taccent mb-3">
-          <IdentificationCard size={15} weight="fill" />
-          <span>Official 300 DPI Passport & Visa Standards</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-tink mb-3">
-          {/* Desktop adaptation: no "Online" — this is a desktop app. */}
-          Passport & Visa Photo Maker
-        </h1>
-        <p className="max-w-2xl mx-auto text-sm sm:text-base text-tmuted">
-          Create compliant passport and visa photos in seconds. Automatically formatted to
-          exact dimensions with white background and 300 DPI resolution.
-        </p>
-      </div>
+    <div className="w-full">
+      {/* Desktop: compact app header instead of the web hero banner. */}
+      <ToolHeader
+        icon={<IdentificationCard size={20} weight="fill" />}
+        title="Passport & Visa Photo Maker"
+        description="Compliant passport and visa photos — exact dimensions, white background, 300 DPI."
+      />
 
       {/* Country / Standard Selector */}
-      <div className="mb-8 flex flex-col items-center justify-center gap-3">
-        <label className="text-sm font-medium text-tink">
-          Select Destination Country or Standard:
-        </label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full max-w-2xl">
+      <div className="mb-5 rounded-2xl border border-tline bg-tsurface p-4 shadow-sm">
+        <div className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-tmuted">
+          Destination country or standard
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full">
           {PASSPORT_SPECS.map((spec) => (
             <button
               key={spec.id}
@@ -110,7 +111,7 @@ export default function PassportPhotoApp() {
       {!selectedFile ? (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-tline bg-tsurface p-10 text-center transition hover:border-taccent hover:bg-tsurface2 cursor-pointer shadow-sm"
+          className="relative flex min-h-[300px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-tline bg-tsurface p-10 text-center transition hover:border-taccent hover:bg-tsurface2 cursor-pointer shadow-sm"
         >
           <input
             ref={fileInputRef}
@@ -236,8 +237,8 @@ export default function PassportPhotoApp() {
       )}
 
       {/* Guidelines Box */}
-      <div className="mt-12 rounded-2xl border border-tline bg-tsurface p-6 sm:p-8">
-        <h2 className="text-lg font-bold text-tink mb-3">Official Photo Guidelines Checklist</h2>
+      <div className="mt-6 rounded-2xl border border-tline bg-tsurface p-5">
+        <h2 className="text-sm font-bold text-tink mb-2.5">Official Photo Guidelines Checklist</h2>
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-tmuted list-disc list-inside">
           <li>Look straight into the camera with a neutral facial expression.</li>
           <li>Ensure even lighting across face without harsh shadows.</li>

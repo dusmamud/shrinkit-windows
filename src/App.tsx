@@ -87,7 +87,7 @@ export default function App() {
 
       {/* Tool area */}
       <main className="min-w-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-5xl px-6 py-6">
+        <div className="mx-auto w-full max-w-6xl px-6 py-6">
           {tool === "resize" && <ShrinkItApp locale={locale} />}
           {tool === "size50" && (
             <TargetSizeApp

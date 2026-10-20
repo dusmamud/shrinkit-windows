@@ -1,5 +1,10 @@
 import { decodeBitmapWithHeicFallback } from "../../lib/image/heic";
-import { downloadFile, useTauriFileDrop } from "../../lib/desktop";
+import {
+  downloadFile,
+  useImagePaste,
+  useTauriFileDrop,
+} from "../../lib/desktop";
+import ToolHeader from "../../components/shell/ToolHeader";
 import { stripBlobMetadata } from "../../lib/image/strip";
 import { useState, useRef, useCallback } from "react";
 import { UploadSimple, SlidersHorizontal, Trash, FileArrowDown } from "@phosphor-icons/react";
@@ -58,6 +63,11 @@ export default function ComparisonSliderApp() {
     if (files[0]) handleFileChange(files[0]);
   });
 
+  // Desktop: Ctrl+V pastes an image here too, like the main resizer.
+  useImagePaste((files) => {
+    if (files[0]) handleFileChange(files[0]);
+  });
+
   const handleQualityChange = (q: number) => {
     setQuality(q);
     if (selectedFile) {
@@ -89,27 +99,19 @@ export default function ComparisonSliderApp() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-taccent/20 bg-taccent/10 px-3 py-1 text-xs font-medium text-taccent mb-3">
-          <SlidersHorizontal size={15} weight="bold" />
-          <span>Visual Squoosh-Style Quality Inspection</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-tink mb-3">
-          Before vs After Image Comparison
-        </h1>
-        <p className="max-w-2xl mx-auto text-sm sm:text-base text-tmuted">
-          Drag the interactive divider across your photo to compare the original and compressed
-          results with pixel-perfect visual precision.
-        </p>
-      </div>
+    <div className="w-full">
+      {/* Desktop: compact app header instead of the web hero banner. */}
+      <ToolHeader
+        icon={<SlidersHorizontal size={20} weight="bold" />}
+        title="Before vs After Comparison"
+        description="Drag the divider to compare the original and compressed results."
+      />
 
       {/* Main Container */}
       {!selectedFile ? (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-tline bg-tsurface p-12 text-center transition hover:border-taccent hover:bg-tsurface2 cursor-pointer shadow-sm"
+          className="relative flex min-h-[340px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-tline bg-tsurface p-12 text-center transition hover:border-taccent hover:bg-tsurface2 cursor-pointer shadow-sm"
         >
           <input
             ref={fileInputRef}

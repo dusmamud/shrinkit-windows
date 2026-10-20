@@ -1,5 +1,10 @@
 import { useState, useRef, useCallback } from "react";
-import { downloadFile, useTauriFileDrop } from "../../lib/desktop";
+import {
+  downloadFile,
+  useImagePaste,
+  useTauriFileDrop,
+} from "../../lib/desktop";
+import ToolHeader from "../../components/shell/ToolHeader";
 import {
   SOCIAL_PRESETS,
   resizeForSocial,
@@ -52,6 +57,11 @@ export default function SocialResizerApp() {
     if (files[0]) handleFileChange(files[0]);
   });
 
+  // Desktop: Ctrl+V pastes an image here too, like the main resizer.
+  useImagePaste((files) => {
+    if (files[0]) handleFileChange(files[0]);
+  });
+
   const handlePresetSelect = (preset: SocialPreset) => {
     setSelectedPreset(preset);
     if (selectedFile) {
@@ -74,26 +84,20 @@ export default function SocialResizerApp() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-taccent/20 bg-taccent/10 px-3 py-1 text-xs font-medium text-taccent mb-3">
-          <ShareNetwork size={15} weight="fill" />
-          <span>All 2026 Social Platform Aspect Ratios</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-tink mb-3">
-          Social Media Image Resizer
-        </h1>
-        <p className="max-w-2xl mx-auto text-sm sm:text-base text-tmuted">
-          Instantly resize your photos for Instagram, YouTube, TikTok, Twitter/X, and LinkedIn
-          without awkward crops or quality loss.
-        </p>
-      </div>
+    <div className="w-full">
+      {/* Desktop: compact app header instead of the web hero banner. */}
+      <ToolHeader
+        icon={<ShareNetwork size={20} weight="fill" />}
+        title="Social Media Image Resizer"
+        description="Resize photos for Instagram, YouTube, TikTok, X, and LinkedIn."
+      />
 
-      {/* Preset Platform Chips */}
-      <div className="mb-6 flex flex-col items-center justify-center gap-3">
-        <label className="text-sm font-medium text-tink">Choose Social Platform Format:</label>
-        <div className="flex flex-wrap items-center justify-center gap-2 max-w-2xl">
+      {/* Preset + mode options */}
+      <div className="mb-5 rounded-2xl border border-tline bg-tsurface p-4 shadow-sm">
+        <div className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-tmuted">
+          Social platform format
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
           {SOCIAL_PRESETS.map((preset) => (
             <button
               key={preset.id}
@@ -112,12 +116,10 @@ export default function SocialResizerApp() {
             </button>
           ))}
         </div>
-      </div>
 
-      {/* Fit vs Crop Mode Switcher */}
-      <div className="mb-8 flex items-center justify-center gap-3">
-        <span className="text-xs font-medium text-tmuted">Mode:</span>
-        <div className="inline-flex rounded-lg border border-tline bg-tsurface p-1">
+        <div className="mt-3 flex items-center gap-3 border-t border-tline pt-3">
+          <span className="text-xs font-medium text-tmuted">Mode:</span>
+          <div className="inline-flex rounded-lg border border-tline bg-tsurface p-1">
           <button
             type="button"
             onClick={() => handleFitModeChange("crop-fill")}
@@ -143,13 +145,14 @@ export default function SocialResizerApp() {
             <span>Fit &amp; Pad Borders</span>
           </button>
         </div>
+        </div>
       </div>
 
       {/* Main Upload / Dropzone */}
       {!selectedFile ? (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-tline bg-tsurface p-10 text-center transition hover:border-taccent hover:bg-tsurface2 cursor-pointer shadow-sm"
+          className="relative flex min-h-[300px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-tline bg-tsurface p-10 text-center transition hover:border-taccent hover:bg-tsurface2 cursor-pointer shadow-sm"
         >
           <input
             ref={fileInputRef}

@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import JSZip from "jszip";
 import { t } from "../../lib/i18n";
-import { downloadFile, scrollIntoViewIfNeeded, useTauriFileDrop } from "../../lib/desktop";
+import {
+  downloadFile,
+  scrollIntoViewIfNeeded,
+  useImagePaste,
+  useTauriFileDrop,
+} from "../../lib/desktop";
 import {
   ImageProcessor,
   ProcessError,
   type ProcessedImage,
   type ProcessSettings,
 } from "../../lib/image/process";
-import {
-  FORMAT_MIME,
-  isSupportedInputFile,
-  isSupportedInputFileName,
-} from "../../lib/image/filenames";
+import { FORMAT_MIME, isSupportedInputFile } from "../../lib/image/filenames";
 import type { Locale } from "../../lib/locales";
 import Dropzone from "./Dropzone";
 import SettingsPanel, { type SettingsState } from "./SettingsPanel";
@@ -175,51 +176,7 @@ export default function ShrinkItApp({ locale }: ShrinkItAppProps) {
   }, []);
 
   useEffect(() => {
-    const onPaste = (e: ClipboardEvent) => {
-      // Don't intercept paste if user is typing in an input or textarea
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)
-      ) {
-        return;
-      }
-
-      const files: File[] = [];
-
-      // 1. Check e.clipboardData.files
-      if (e.clipboardData?.files && e.clipboardData.files.length > 0) {
-        for (const file of Array.from(e.clipboardData.files)) {
-          if (file.type.startsWith("image/") || isSupportedInputFileName(file.name)) {
-            files.push(file);
-          }
-        }
-      }
-
-      // 2. Check e.clipboardData.items for pasted screenshots/blobs (e.g. from Snipping Tool / PrtScn)
-      if (files.length === 0 && e.clipboardData?.items) {
-        for (const item of Array.from(e.clipboardData.items)) {
-          if (item.type.startsWith("image/")) {
-            const blob = item.getAsFile();
-            if (blob) {
-              const ext = blob.type.split("/")[1]?.replace("jpeg", "jpg") || "png";
-              const namedFile = new File([blob], `pasted-image-${Date.now()}.${ext}`, {
-                type: blob.type,
-              });
-              files.push(namedFile);
-            }
-          }
-        }
-      }
-
-      if (files.length > 0) {
-        e.preventDefault();
-        addFiles(files);
-      }
-    };
-    window.addEventListener("paste", onPaste);
     return () => {
-      window.removeEventListener("paste", onPaste);
       processorRef.current?.terminate();
       for (const item of itemsRef.current) {
         URL.revokeObjectURL(item.previewUrl);
@@ -341,6 +298,9 @@ export default function ShrinkItApp({ locale }: ShrinkItAppProps) {
       return prev.filter((i) => i.id !== id);
     });
   }, []);
+
+  // Desktop: Ctrl+V paste-image works on every tool via the shared hook.
+  useImagePaste(addFiles);
 
   const clearAll = useCallback(() => {
     abortRef.current?.abort();

@@ -149,3 +149,73 @@ export function scrollIntoViewIfNeeded(el: HTMLElement, offset = 30): void {
     (scroller as HTMLElement).scrollTo({ top, behavior });
   }
 }
+
+/**
+ * Shared Ctrl+V / paste-image support.
+ *
+ * Only the main resizer listened for paste, so pasting an image (copied file
+ * or Snipping Tool screenshot) silently did nothing on every other tool
+ * screen. This hook gives every tool the same behavior: image files from
+ * `clipboardData.files`, plus raw image blobs from `clipboardData.items`
+ * (screenshots), are handed to the callback. Typing in inputs/textareas is
+ * never intercepted.
+ */
+export function useImagePaste(onFiles: (files: File[]) => void): void {
+  const callbackRef = useRef(onFiles);
+  callbackRef.current = onFiles;
+
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      // Don't intercept paste if user is typing in an input or textarea
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      const files: File[] = [];
+
+      // 1. Check e.clipboardData.files (copied image files)
+      if (e.clipboardData?.files && e.clipboardData.files.length > 0) {
+        for (const file of Array.from(e.clipboardData.files)) {
+          if (
+            file.type.startsWith("image/") ||
+            /\.(jpe?g|png|gif|webp|bmp|avif|heic|heif)$/i.test(file.name)
+          ) {
+            files.push(file);
+          }
+        }
+      }
+
+      // 2. Check e.clipboardData.items for pasted screenshots/blobs
+      //    (e.g. from Snipping Tool / PrtScn)
+      if (files.length === 0 && e.clipboardData?.items) {
+        for (const item of Array.from(e.clipboardData.items)) {
+          if (item.type.startsWith("image/")) {
+            const blob = item.getAsFile();
+            if (blob) {
+              const ext =
+                blob.type.split("/")[1]?.replace("jpeg", "jpg") || "png";
+              files.push(
+                new File([blob], `pasted-image-${Date.now()}.${ext}`, {
+                  type: blob.type,
+                }),
+              );
+            }
+          }
+        }
+      }
+
+      if (files.length > 0) {
+        e.preventDefault();
+        callbackRef.current(files);
+      }
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, []);
+}
