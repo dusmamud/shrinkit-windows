@@ -99,3 +99,4 @@ Code-signing: set up your certificate before public distribution (see Tauri docs
 - Windows Explorer right-click entry “Resize with ShrinkIt” (NSIS registry keys)
 - “Open with ShrinkIt” file association (`fileAssociations` in tauri.conf.json)
 - Auto-updater (`@tauri-apps/plugin-updater` + signing)
+- **Tip:** drag files straight from Windows Explorer into any of the six tools — OS file-drop is bridged into the app via the Tauri fs plugin.
