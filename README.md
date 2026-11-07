@@ -100,3 +100,4 @@ Code-signing: set up your certificate before public distribution (see Tauri docs
 - “Open with ShrinkIt” file association (`fileAssociations` in tauri.conf.json)
 - Auto-updater (`@tauri-apps/plugin-updater` + signing)
 - **Tip:** drag files straight from Windows Explorer into any of the six tools — OS file-drop is bridged into the app via the Tauri fs plugin.
+- **Tip:** the **Compress to 20KB** tool has a black-and-white signature mode for scanned signatures.
