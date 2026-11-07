@@ -101,3 +101,4 @@ Code-signing: set up your certificate before public distribution (see Tauri docs
 - Auto-updater (`@tauri-apps/plugin-updater` + signing)
 - **Tip:** drag files straight from Windows Explorer into any of the six tools — OS file-drop is bridged into the app via the Tauri fs plugin.
 - **Tip:** the **Compress to 20KB** tool has a black-and-white signature mode for scanned signatures.
+- **Tip:** `npm run tauri build` produces both an NSIS (`.exe`) and an MSI installer under `src-tauri/target/release/bundle/`.
